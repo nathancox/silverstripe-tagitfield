@@ -1,9 +1,28 @@
-ul.tagit {
-    padding: 1px 5px;
-    overflow: auto;
-    margin-left: inherit; /* usually we don't want the regular ul margins. */
-    margin-right: inherit;
+form .middleColumn ul.tagit {
+	padding: 1px 5px;
+	overflow: auto;
+  margin: 0;
+  
+  
+		-moz-transition: border 0.2s ease-in 0s;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #FFFFFF;
+    background-image: -moz-linear-gradient(#EAEAEA, #FFFFFF 10%);
+    background-origin: padding-box;
+    background-position: 0 0;
+    background-repeat: repeat;
+    background-size: 100% auto;
+    border: 1px solid #B3B3B3;
+    border-radius: 4px 4px 4px 4px;
+    line-height: 16px;
+    outline: medium none;
+    
+    /*padding: 7px;*/
+  
+  
 }
+
 ul.tagit li {
     display: block;
     float: left;

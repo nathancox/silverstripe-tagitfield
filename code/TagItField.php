@@ -1,23 +1,33 @@
 <?php
 /*
 
-	add FMTagField class, either in 'class' => 'text fmtagfield' . ($this->extraClass() ? $this->extraClass() : ''),
-		or via addExtraClass()
+	- tag sources
+		- prefetch automatically
+		- prefetch manually supply tags
+		- AJAX automatically
+		- AJAX manual URL
+		- none
+	
 */
 class TagItField extends TextField {
 	
-	var $delimiter = ',';
-	var $allowSpaces = false;
-	
-	
 	//var $dataDelimiter = ',';
+	var $settings = array(
+		'allowSpaces' => true,
+		'caseSensitive' => false,
+		'singleFieldDelimiter' => ',',
+		'placeholderText' => null,
+		'tagSourceURL' => null
+	);
 	
-	var $valueArray = array();
+	var $useAJAX = false;
 	
-	function __construct($name, $title = null, $value = "", $maxLength = null, $form = null) {
-		$this->maxLength = $maxLength;
-		
-		parent::__construct($name, $title, $value, $form);
+	var $availableTags = array();
+	
+	//var $valueArray = array();
+	
+	function __construct($name, $title = null, $value = "", $form = null) {
+		parent::__construct($name, $title, $value, null, $form);
 	}
 	
 	
@@ -30,59 +40,126 @@ class TagItField extends TextField {
 		Requirements::javascript("tagitfield/thirdparty/tag-it/tag-it.js");
 		Requirements::javascript("tagitfield/javascript/TagItField.js");
 		
-		Requirements::css(THIRDPARTY_DIR."/jquery-ui-themes/smoothness/jquery.ui.all.css");
+	//		Requirements::css(THIRDPARTY_DIR."/jquery-ui-themes/smoothness/jquery.ui.all.css");
 		Requirements::css("tagitfield/thirdparty/tag-it/jquery.tagit.css");
+		Requirements::css("tagitfield/css/TagItField.css");
+	}
+	
+	
+	function Type() {
+		return 'tagitfield';
 	}
 	
 	function Field() {
-		$this->includeRequirements();
-	
-		$attributes = array(
-			'type' => 'text',
-			'class' => 'text tagitfield ' . ($this->extraClass() ? $this->extraClass() : ''),
-			'id' => $this->id(),
-			'name' => $this->Name(),
-			'value' => $this->Value(),
-			'tabindex' => $this->getTabIndex(),
-			'maxlength' => ($this->maxLength) ? $this->maxLength : null,
-			'size' => ($this->maxLength) ? min( $this->maxLength, 30 ) : null 
-		);
-		
-		if($this->disabled) {
-			$attributes['disabled'] = 'disabled';
+		// we have to set this URL at the last minute because $this->Link() does work in a setter
+		if ($this->getIsAJAX()) {
+			$this->settings['tagSourceURL'] = $this->Link('suggest');
+		}
+		$this->setAttribute('data-settings', Convert::array2json($this->settings));
+		$availableTags = $this->getAvailableTags();
+		if (count($availableTags) > 0) {
+			$this->setAttribute('data-available-tags', implode("::", $availableTags));
 		}
 		
-		$attributes['data-delimiter'] = $this->delimiter;
-		$attributes['data-allowspaces'] = $this->allowSpaces;
+		$html = parent::Field();
+		$this->includeRequirements();
 		
-		return $this->createTag('input', $attributes);
+		return $html;
 	}
-	
 	
 	function setDelimiter($string) {
-		$this->delimiter = $string;
+		$this->settings['singleFieldDelimiter'] = $string;
 	}
 	function getDelimiter() {
-		return $this->delimiter;
+		return $this->settings['singleFieldDelimiter'];
 	}
 	
-	function setAllowSpaces($string) {
-		$this->allowSpaces = $string;
+	function setPlaceholder($string) {
+		$this->settings['placeholderText'] = $string;
+	}
+	function getPlaceholder() {
+		return $this->settings['placeholderText'];
+	}
+	
+	function setAllowSpaces($boolean) {
+		$this->settings['allowSpaces'] = $boolean;
 	}
 	function getAllowSpaces() {
-		return $this->allowSpaces;
+		return $this->settings['allowSpaces'];
+	}
+	
+	function setCaseSensitive($boolean) {
+		$this->settings['caseSensitive'] = $boolean;
+	}
+	function getCaseSensitive() {
+		return $this->settings['caseSensitive'];
+	}
+	
+	function setTagSource($string) {
+		$this->settings['tagSourceURL'] = $string;
+	}
+	function getTagSource() {
+		return $this->settings['tagSourceURL'];
+	}
+	
+	function useAJAX($boolean) {
+		$this->useAJAX = $boolean;
+		/*
+		if ($boolean) {
+			$this->settings['tagSourceURL'] = $this->Link('suggest');
+		} else {
+			$this->settings['tagSourceURL'] = null;
+		}
+		*/
+	}
+	function getIsAJAX() {
+		return $this->useAJAX;
+	//	return ($this->settings['tagSourceURL'] != null);
+	}
+	
+	
+
+	function setConfig($key, $value) {
+		$this->settings[$key] = $value;
+	}
+	
+	function getConfig($key) {
+		return $this->settings[$key];
+	}
+	
+	
+	function setAvailableTags($tagArray) {
+		$this->availableTags = $tagArray;
 	}
 
+	function getAvailableTags() {
+		return $this->availableTags;
+	}
+	
+	
+	function suggest($request) {
+		$searchString = $request->requestVar('search');
+		
+		$output = array();
+		$output[] = 'test';
+		$output[] = 'testing';
+		$output[] = $searchString;
+		
+		$response = new SS_HTTPResponse(Convert::array2json($output));
+		$response->addHeader('Content-Type', 'application/json');
+		return $response;
+	}
+	
+	function getTagsFromSource() {
+		$output = array();
+		$output[] = 'test';
+		$output[] = 'testing';
+		
+		return $output;
+	}
+	
+	
 	/*
-	function setDataDelimiter($string) {
-		$this->dataDelimiter = $string;
-	}
-	function getDataDelimiter() {
-		return $this->dataDelimiter;
-	}
-	*/
-	
-	
 	function setValueX($value) {
 		$this->valueArray = explode();
 		
@@ -92,7 +169,7 @@ class TagItField extends TextField {
 	function dataValueX() {
 		
 	}
-	
+	*/
 	
 	
 	
