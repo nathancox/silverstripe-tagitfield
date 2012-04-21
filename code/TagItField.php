@@ -69,7 +69,9 @@ class TagItField extends TextField {
 		return 'tagitfield';
 	}
 	
-	function Field() {
+	function Field($properties = array()) {
+		
+		
 		
 		$this->setAttribute('data-settings', Convert::array2json($this->settings));
 		$availableTags = $this->getAvailableTags();
@@ -81,11 +83,9 @@ class TagItField extends TextField {
 			$this->settings['tagSourceURL'] = $this->Link('suggest');
 		}
 		
-		
-		$html = parent::Field();
 		$this->includeRequirements();
 		
-		return $html;
+		return parent::Field($properties);
 	}
 	
 	function setDelimiter($string) {
@@ -242,7 +242,7 @@ class TagItField extends TextField {
 		return $this;
 	}
 	
-	function saveInto($record) {
+	function saveInto(DataObjectInterface $record) {
 		if ($relation = $this->getRelation()) {
 			$submittedTags = explode($this->getDelimiter(), $this->value);
 			
