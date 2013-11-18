@@ -15,7 +15,7 @@ class TagItField extends TextField {
 	var $settings = array(
 		'allowSpaces' => true,
 		'caseSensitive' => false,
-		'singleFieldDelimiter' => ',',
+		'singleFieldDelimiter' => ', ',
 		'placeholderText' => null,
 		'tagSourceURL' => null
 	);
@@ -56,12 +56,28 @@ class TagItField extends TextField {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-ui/jquery.ui.widget.js");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-ui/jquery.ui.autocomplete.js");
 		
-		Requirements::javascript("tagitfield/thirdparty/tag-it/tag-it.js");
-		Requirements::javascript("tagitfield/javascript/TagItField.js");
+		$path = $this->getModulePath();
+		Requirements::javascript($path."/thirdparty/tag-it/tag-it.js");
+		Requirements::javascript($path."/javascript/TagItField.js");
 		
 	//		Requirements::css(THIRDPARTY_DIR."/jquery-ui-themes/smoothness/jquery.ui.all.css");
-		Requirements::css("tagitfield/thirdparty/tag-it/jquery.tagit.css");
-		Requirements::css("tagitfield/css/TagItField.css");
+		Requirements::css($path."/thirdparty/tag-it/jquery.tagit.css");
+		Requirements::css($path."/css/TagItField.css");
+	}
+	
+	/**
+	 *	This is an experiment for allowing submodules: it should be able to include JS/CSS files
+	 *  even if you put the module inside another folder (like "modules/tagitfield" or "formfields/tagitfield")
+	 *  relies on the requirements being in a sibling folder to this one.  Eg module/code and module/css but not module/code/formfields and module/css
+	 */
+	function getModulePath() {
+		$path = dirname(__DIR__);
+		$path = str_replace(BASE_PATH.DIRECTORY_SEPARATOR, '', $path);
+		
+		// for windows
+		$path = str_replace('\\', '/', $path);
+		
+		return $path;
 	}
 	
 	
@@ -243,7 +259,8 @@ class TagItField extends TextField {
 	}
 	
 	function saveInto(DataObjectInterface $record) {
-		if ($relation = $this->getRelation()) {
+		$relation = $this->getRelation();
+		if ($relation) {
 			$submittedTags = explode($this->getDelimiter(), $this->value);
 			
 			$tagClass = $this->getTagClass();
@@ -293,7 +310,7 @@ class TagItField extends TextField {
 				}
 			}
 			
-		} else if ($record->hasField()) {
+		} else if ($record->hasField($this->name)) {
 			$record->setCastedField($this->name, $this->dataValue());
 		} else {
 			// @TODO: better error handling
